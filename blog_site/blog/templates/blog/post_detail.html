@@ -1,0 +1,88 @@
+{% extends 'blog/base.html' %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="col-md-auto">
+            <h1 class="post-title">{{ post.title }}</h1>
+            {% if post.published_date %}
+                <div class="date postdate">
+                    Posted by {{post.author}} on
+                    {{post.published_date}} 
+                </div>
+            {% else %}
+            <a class="btn btn-success" href="{% url 'blog:post_publish' pk=post.pk %}">Publish</a> 
+            {% endif %}
+                {% if post.image %}
+                <div class ="post-image">
+                    <img  src="{{ post.image.url }}" alt="post image">
+                </div>
+                {% endif %}
+                <div class="post-content"> 
+                    <p>{{ post.text|safe|linebreaks }}</p>
+                </div> 
+            {% if user.is_authenticated and post.post_owner == request.user  %}
+                <a class="btn btn-warning" href="{% url 'blog:post_edit' pk=post.pk %}"><i class="fas fa-pencil-alt"></i></a>
+                <a class="btn btn-danger" href="{% url 'blog:post_remove' pk=post.pk %}"><i class="fas fa-trash-alt"></i></a>
+            {% endif %}
+
+            <hr>
+            <a class=" btn btn-primary btn-comment" href="{% url 'blog:add_comment_to_post' pk=post.pk %}">Add Comment</a> 
+            <div class="row bootstrap snippets">
+                <div class="col-md-6 col-md-offset-2 col-sm-12">
+                    <div class="comment-wrapper">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                Comments
+                            </div>
+                            <div class="panel-body">
+                            <ul class="media-list">
+                            {% for comment in post.comments.all %}
+                                {% if user.is_authenticated and post.post_owner == request.user or comment.approve_comment  %}
+                                    {% if not comment.approve_comment and user.is_authenticated  and post.post_owner == request.user %}
+                                    <a class="btn btn-danger" href="{% url 'blog:comment_remove' pk=comment.pk %}"><i class="fas fa-times-circle"></i></a>
+                                    <a class="btn btn-success" href="{% url 'blog:comment_approve' pk=comment.pk %}"><i class="fas fa-check-circle"></i></a>
+                                    {% endif %}
+                                    <li class="media">
+                                        <a href="#" class="pull-left">
+                                            {% if comment.owner.info.profile_pic %}
+                                            <img src="{{ comment.owner.info.profile_pic.url }}" alt="" class="img-circle">
+                                            {% endif %}
+                                        </a>
+                                        <div class="media-body">
+                                            <span class="text-muted pull-right">
+                                                <small class="text-muted">{{ comment.create_date }} 
+                                                    <div>
+                                                    <div class="pull-right">
+                                                        {% if comment.owner == request.user %}
+                                                            <a class="btn btn-danger" href="{% url 'blog:comment_remove' pk=comment.pk %}"><i class="fas fa-times-circle"></i></a>
+                                                        {% endif %}
+                                                    </div>
+                                                    </div>
+                                                </small>
+                                            </span>
+                                            <strong class="text-success">{{ comment.author }}</strong>
+                                            <p>
+                                            {{ comment.text|safe|linebreaks }}
+                                            </p>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                                {% empty %}
+                                <p>No Comments </p>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+{% endblock %}
+
